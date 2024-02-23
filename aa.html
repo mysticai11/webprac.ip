@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anime Landing Page</title>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: white;
+    }
+    #video-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+    .container {
+      max-width: 600px;
+      margin: 100px auto;
+      text-align: center;
+      background-color: rgba(3, 3, 3, 0.5); /* Background color with transparency */
+      padding: 20px; 
+      border-radius: 10px; /* Optional: Add some border-radius for a nicer look */
+    }
+    h1 {
+      color: purple;
+    }
+    p {
+      color: rgb(229, 222, 222);
+    }
+    input[type="text"] {
+      padding: 10px;
+      width: 250px;
+      border: 2px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+    input[type="submit"] {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    input[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+    .suggestions {
+      position: absolute;
+      background-color: white;
+      border: 1px solid #ccc;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1;
+      width: 250px;
+    }
+    .suggestion-item {
+      padding: 10px;
+      cursor: pointer;
+      color: rgb(152, 142, 142);
+      display: flex;
+      align-items: center;
+    }
+    .suggestion-item img {
+      width: 50px;
+      height: auto;
+      margin-right: 10px;
+    }
+    .suggestion-item:hover {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <video autoplay muted loop id="video-background">
+    <source src="angad33.gif.mp4" type="video/mp4"> <!-- Replace 'background_video.mp4' with the path to your video -->
+    Your browser does not support the video tag.
+  </video>
+
+  <div class="container">
+    <h1>Welcome to Anime World!</h1>
+    <p>Please enter your anime name below:</p>
+    <input type="text" id="animeName" placeholder="Enter anime name">
+    <input type="submit" value="Search">
+    <div class="suggestions" id="suggestionList"></div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+  <script>
+    $(function() {
+      $("#animeName").autocomplete({
+        source: function(request, response) {
+          $.ajax({
+            url: "https://api.jikan.moe/v4/search/anime",
+            dataType: "json",
+            data: {
+              q: request.term.toLowerCase() // Case-insensitive search
+            },
+            success: function(data) {
+              var suggestions = [];
+              data.results.forEach(function(anime) {
+                if (anime.title.toLowerCase().includes(request.term.toLowerCase())) {
+                  suggestions.push({
+                    label: anime.title,
+                    value: anime.mal_id, // Replace with another unique identifier if needed
+                    image: anime.image_url
+                  });
+                }
+              });
+              response(suggestions);
+            },
+            error: function(error) {
+              console.error("Error fetching suggestions:", error);
+              response([]);
+            }
+          });
+        },
+        minLength: 2,
+        select: function(event, ui) {
+          // Redirect to MyAnimeList page
+          window.location.href = "https://myanimelist.net/anime/" + ui.item.value;
+        },
+        open: function(event, ui) {
+          // Add styling to autocomplete suggestions
+          ui.autocomplete.menu.element.removeClass("ui-corner-all").addClass("custom-suggestions");
+        }
+      });
+
+      // Search button click event
+      $("input[type='submit']").click(function() {
+        var animeName = $("#animeName").val();
+        if (animeName.trim() === "") {
+          alert("Please enter the name of an anime.");
+        } else {
+          // Redirect user to MyAnimeList page
+          window.location.href = "https://myanimelist.net/search/all?q=" + encodeURIComponent(animeName);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
